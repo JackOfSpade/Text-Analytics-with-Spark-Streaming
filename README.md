@@ -1,4 +1,4 @@
-# Text-Analytics-with-Spark-Streaming
+# Tweet Analytics with Spark Streaming
 This application consists of 3 parts:
 
 1. Twitter client (twitter_app.py): This is an application that connects to the Twitter API and obtains tweets as they become available. 
