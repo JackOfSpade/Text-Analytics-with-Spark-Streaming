@@ -8,7 +8,7 @@ This application consists of 3 parts:
 3. Visualization (plotter.py): This component plots the results computed by the apache spark streaming application.
 
 # Example Results
-<img src="https://i.imgur.com/D3uS08b.png" width="75%" height="75%">
 <img src="https://i.imgur.com/LQUFtrF.png" width="75%" height="75%">
 Sentiment analysis of the tweets was performed using the TextBlob library.
 
+<img src="https://i.imgur.com/D3uS08b.png" width="75%" height="75%">
