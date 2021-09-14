@@ -1,9 +1,8 @@
 import sys
 import re
-from pyspark import SparkContext
+from pyspark import SparkConf,SparkContext
 from pyspark.streaming import StreamingContext
-# from textblob import TextBlob
-import twitter_app
+from textblob import TextBlob
 
 # Initialization operations
 def init(hostname, port):
@@ -19,15 +18,7 @@ def init(hostname, port):
 
     return (streaming_context, DStream)
 
-# Expected data stream format: "#hashtag \t tweet" (without the spaces)
-# If a tweet has multiple hashtags, we receive it into Spark multiple times (once with each unique hashtag).
-def start_twitter_client(target_hashtags, port):
-    twitter_app.streamtweets(target_hashtags, port)
-
-def attach_commands_to_DStream(DStream, hashtags, port, topic=None):
-    # Start Twitter client
-    start_twitter_client(target_hashtags=hashtags, port=port)
-
+def attach_commands_to_DStream(DStream, topic=None):
     # If we're doing part A...
     if topic is None:
         # Map: #hashtag \t tweet -----> #hashtag \t 1
@@ -52,7 +43,7 @@ def clean_tweet(tweet):
 def get_tweet_sentiment(tweet):
     # create TextBlob object of passed tweet text
     analysis = TextBlob(clean_tweet(tweet))
-    analysis = 1
+    
     # Positive: analysis.sentiment.polarity > 0
     # Neutral: analysis.sentiment.polarity == 0
     # Negative: analysis.sentiment.polarity < 0:
@@ -60,22 +51,8 @@ def get_tweet_sentiment(tweet):
     return analysis
 
 if __name__ == "__main__":
-
-    # Hashtags for part A:
-    vaccine_hashtags = ["#Pfizer", "#Moderna", "#JohnsonAndJohnson", "#AstraZeneca", "#SputnikV"]
-
     # Topic and Hashtags for part B:
-    topic_info = [["Tesla", ["#tesla", "#teslamodel", "#elonmusk", "#teslamotors", "#teslamodels", "#cybertruck",
-                      "#teslamodelx", "#teslalife", "#spacex", "#teslaroadster"]],
-                  ["Toyota", ["#toyotaclub", "#toyota", "#toyotanation", "#camry", "#toyotalove", "#toyotalife",
-                       "#toyotacorolla", "#corolla", "#toyotacamry", "#toyotafamily"]],
-                  ["Ford", ["#fords", "#ford", "#fordperformance", "#fordnation", "#fordsofinstagram", "#fordracing",
-                       "#mustang", "#mk", "#fordf", "#fordfiesta"]],
-                  ["Volkswagen", ["#vw", "#vwlove", "#vwbus", "#vwgolf", "#vwlife", "#vwbeetle", "#vwpolo", "#vwbug",
-                       "#vwlovers", "#vwcamper"]],
-                  ["Honda", ["#hondas", "#honda", "#hondacivic", "#vtec", "#hondalife", "#civic", "#hondalove",
-                             "#hondanation", "#hondatuning", "#hondafest"]]
-    ]
+    topics = ["Tesla", "Toyota", "Ford", "Volkswagen", "Honda"]
 
     # Put them in a list so we can print or start them together.
     streaming_context_list = []
@@ -84,24 +61,28 @@ if __name__ == "__main__":
     # 1st console argument is "A" (do part A):
     if sys.argv[1] == "A":
         # Connect to data stream at specified port
-        streaming_context, DStream = init(hostname="localhost", port=2001)
-        DStream = attach_commands_to_DStream(DStream=DStream, hashtags=vaccine_hashtags, port=2001)
+        streaming_context, DStream = init(hostname="twitter", port=8088)
+        DStream = attach_commands_to_DStream(DStream=DStream)
         DStream_list.append(DStream)
         streaming_context_list.append(streaming_context)
     # # 1st console argument is "B" (do part B)::
     elif sys.argv[1] == "B":
         # Connect to multiple data streams at specified ports
         for i in range(5):
-            streaming_context, DStream = init(hostname="localhost", port=2002+i)
-            DStream = attach_commands_to_DStream(DStream=DStream, hashtags=topic_info[i][1], port=2002+i, topic=topic_info[i][0])
+            streaming_context, DStream = init(hostname="twitter", port=2002+i)
+            DStream = attach_commands_to_DStream(DStream=DStream, topic=topics[i])
             DStream_list.append(DStream)
             streaming_context_list.append(streaming_context)
     else:
         print("Error: incorrect argument!")
 
+    i = 0
     for DStream in DStream_list:
-        # Print the first ten elements of each RDD generated in this DStream to the console
-        DStream.pprint()
+        # Print the first ten elements of each RDD generated in this DStream to the console        
+        #DStream.pprint()
+
+        DStream.saveAsTextFiles(topics[i], "txt")
+        i += 1
 
     for streaming_context in streaming_context_list:
         # Start the computation
