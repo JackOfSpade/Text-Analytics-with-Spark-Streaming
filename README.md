@@ -9,5 +9,5 @@ This application consists of 3 parts:
 
 # Example Results
 <img src="https://i.imgur.com/LQUFtrF.png" width="75%" height="75%">
-Sentiment analysis was performed using the TextBlob library.
+Sentiment analysis of the tweets was performed using the TextBlob library.
 <img src="https://i.imgur.com/D3uS08b.png" width="75%" height="75%">
