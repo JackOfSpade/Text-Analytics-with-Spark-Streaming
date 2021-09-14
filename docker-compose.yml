@@ -1,0 +1,50 @@
+# Compose file format version
+version: "3.7"
+
+# Contains services where each service contains configurations that will be applied to each container started for that service.
+services:
+     twitter:
+          # Where the Dockerfile is
+          build: .
+          working_dir: /my_project
+          volumes:
+               - type: bind
+                 source: ./Volume
+                 target: /my_project/Volume
+          # Interactive Console
+          stdin_open: True   # Same as docker run -i
+          tty: True          # Same as docker run -t
+          # Ports to expose to other services, not the HOST.
+          expose:
+               - "2001"
+               - "2002"
+               - "2003"
+               - "2004"
+               - "2005"
+               - "2006"
+     spark:
+          # Where the Dockerfile is
+          build: .
+          working_dir: /my_project
+          volumes:
+               - type: bind
+                 source: ./Volume
+                 target: /my_project/Volume
+          # Dependencies for this service
+          depends_on:
+               - twitter
+          # Interactive Console
+          stdin_open: True   # Same as docker run -i
+          tty: True          # Same as docker run -t
+          # Ports to expose to HOST
+          ports:
+               - "2001:2001"
+               - "2002:2002"
+               - "2003:2003"
+               - "2004:2004"
+               - "2005:2005"
+               - "2006:2006"
+
+# Declare named volumes and their optional parameters.
+volumes:
+     Volume:
